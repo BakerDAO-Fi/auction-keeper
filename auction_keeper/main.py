@@ -437,7 +437,7 @@ class AuctionKeeper:
 
         # Look for unsafe vaults and bite them
         urns = self.urn_history.get_urns()
-        logging.debug(f"Evaluating {len(urns)} {self.ilk} urns to be bitten if any are unsafe")
+        logging.info(f"Evaluating {len(urns)} {self.ilk} urns to be bitten if any are unsafe")
 
         for i, urn in enumerate(urns.values()):
             if i % 500 == 0:  # Every 500 vaults, free some CPU and then update ilk.rate
@@ -709,7 +709,7 @@ class AuctionKeeper:
             # if no transaction in progress, send a new one
             transaction_in_progress = auction.transaction_in_progress()
 
-            logging.debug(f"Handling bid for auction {id}: tx in progress={transaction_in_progress is not None}, " 
+            logging.info(f"Handling bid for auction {id}: tx in progress={transaction_in_progress is not None}, " 
                           f"auction.price={auction.price}, bid_price={bid_price}")
 
             # if transaction has not been submitted...
