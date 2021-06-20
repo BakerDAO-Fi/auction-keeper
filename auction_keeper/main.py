@@ -130,7 +130,10 @@ class AuctionKeeper:
                             help="Increases gas price when transactions haven't been mined after some time")
         parser.add_argument("--gas-maximum", type=float, default=2000,
                             help="Places an upper bound (in Gwei) on the amount of gas to use for a single TX")
-
+				
+				parser.add_argument("--network", type=str, default='bscmainnet', help="Network Name")
+        parser.add_argument("--log", type=str, default='./keeper.log', help="Log File Name")
+        
         parser.add_argument("--debug", dest='debug', action='store_true',
                             help="Enable debug output")
 
@@ -158,7 +161,8 @@ class AuctionKeeper:
             raise RuntimeError("--from-block must be specified to kick off flop auctions")
 
         # Configure core and token contracts
-        self.mcd = DssDeployment.from_node(web3=self.web3)
+        #self.mcd = DssDeployment.from_node(web3=self.web3)
+        self.mcd = DssDeployment.from_network(web3=self.web3, network = self.arguments.network)
         self.vat = self.mcd.vat
         self.cat = self.mcd.cat
         self.vow = self.mcd.vow
@@ -220,8 +224,26 @@ class AuctionKeeper:
         self.dead_since = {}
         self.lifecycle = None
 
-        logging.basicConfig(format='%(asctime)-15s %(levelname)-8s %(message)s',
-                            level=(logging.DEBUG if self.arguments.debug else logging.INFO))
+        #logging.basicConfig(format='%(asctime)-15s %(levelname)-8s %(message)s',
+        #                    level=(logging.DEBUG if self.arguments.debug else logging.INFO))
+                            
+        logging.basicConfig(filemode="w",
+                    format='%(asctime)-15s %(levelname)-8s %(message)s',
+                    datefmt='%a %d %b %Y %H:%M:%S',
+                    level=(logging.DEBUG if self.arguments.debug else logging.INFO))
+        logging.getLogger('').setLevel(logging.DEBUG if self.arguments.debug else logging.INFO)
+
+        formatter = logging.Formatter('%(asctime)-15s %(levelname)-8s %(message)s')
+
+        fileHandler = logging.FileHandler(self.arguments.log)
+        fileHandler.setLevel(logging.DEBUG if self.arguments.debug else logging.INFO)
+        fileHandler.setFormatter(formatter)
+        logging.getLogger('').addHandler(fileHandler)
+
+        console = logging.StreamHandler()
+        console.setLevel(logging.DEBUG if self.arguments.debug else logging.INFO)
+        console.setFormatter(formatter)
+        logging.getLogger('').addHandler(console)
 
         # Create gas strategy used for non-bids and bids which do not supply gas price
         self.gas_price = DynamicGasPrice(self.arguments, self.web3)
@@ -240,10 +262,15 @@ class AuctionKeeper:
                 self.deal_for.add(Address(account))
 
         # reduce logspew
-        logging.getLogger('urllib3').setLevel(logging.INFO)
-        logging.getLogger("web3").setLevel(logging.INFO)
-        logging.getLogger("asyncio").setLevel(logging.INFO)
-        logging.getLogger("requests").setLevel(logging.INFO)
+        #logging.getLogger('urllib3').setLevel(logging.INFO)
+        #logging.getLogger("web3").setLevel(logging.INFO)
+        #logging.getLogger("asyncio").setLevel(logging.INFO)
+        #logging.getLogger("requests").setLevel(logging.INFO)
+        
+        logging.getLogger('urllib3').setLevel(logging.DEBUG if self.arguments.debug else logging.INFO)
+        logging.getLogger("web3").setLevel(logging.DEBUG if self.arguments.debug else logging.INFO)
+        logging.getLogger("asyncio").setLevel(logging.DEBUG if self.arguments.debug else logging.INFO)
+        logging.getLogger("requests").setLevel(logging.DEBUG if self.arguments.debug else logging.INFO)
 
     def main(self):
         def seq_func(check_func: callable):
