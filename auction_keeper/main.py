@@ -131,7 +131,7 @@ class AuctionKeeper:
         parser.add_argument("--gas-maximum", type=float, default=2000,
                             help="Places an upper bound (in Gwei) on the amount of gas to use for a single TX")
 				
-				parser.add_argument("--network", type=str, default='bscmainnet', help="Network Name")
+        parser.add_argument("--network", type=str, default='bscmainnet', help="Network Name")
         parser.add_argument("--log", type=str, default='./keeper.log', help="Log File Name")
         
         parser.add_argument("--debug", dest='debug', action='store_true',
@@ -143,7 +143,7 @@ class AuctionKeeper:
         self.web3: Web3 = kwargs['web3'] if 'web3' in kwargs else web3_via_http(
             endpoint_uri=self.arguments.rpc_host, timeout=self.arguments.rpc_timeout, http_pool_size=100)
         self.web3.eth.defaultAccount = self.arguments.eth_from
-        from web3.middleware import geth_poa_middleware
+        self.web3.middleware_onion.inject(geth_poa_middleware, layer=0)
         register_keys(self.web3, self.arguments.eth_key)
         self.our_address = Address(self.arguments.eth_from)
 
