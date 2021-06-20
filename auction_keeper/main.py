@@ -44,6 +44,7 @@ from auction_keeper.urn_history import ChainUrnHistoryProvider
 from auction_keeper.urn_history_tokenflow import TokenFlowUrnHistoryProvider
 from auction_keeper.urn_history_vulcanize import VulcanizeUrnHistoryProvider
 
+from web3.middleware import geth_poa_middleware
 
 class AuctionKeeper:
     logger = logging.getLogger()
@@ -139,6 +140,7 @@ class AuctionKeeper:
         self.web3: Web3 = kwargs['web3'] if 'web3' in kwargs else web3_via_http(
             endpoint_uri=self.arguments.rpc_host, timeout=self.arguments.rpc_timeout, http_pool_size=100)
         self.web3.eth.defaultAccount = self.arguments.eth_from
+        from web3.middleware import geth_poa_middleware
         register_keys(self.web3, self.arguments.eth_key)
         self.our_address = Address(self.arguments.eth_from)
 
